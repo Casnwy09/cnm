@@ -4,21 +4,31 @@
 #include "shader.h"
 #include "../util/util.h"
 
-GLuint shaderProgramFromFile(const char * vertFile, const char * fragFile) {
-    GLuint program, vert, frag;
+GLuint shaderProgramFromFile(const char * vertFile, const char * geomFile, const char * fragFile) {
+    GLuint program, vert, frag, geom;
     GLint status;
     char log[1024], * source;
 
     if (!(source = fileToUTF8(vertFile))) return 0;
     vert = shaderFromString(GL_VERTEX_SHADER, source);
     free(source);
-    if (!(source = fileToUTF8(fragFile))) { glDeleteShader(vert); return 0; }
+    if (geomFile) {
+        if (!(source = fileToUTF8(geomFile))) { glDeleteShader(vert); return 0; }
+        geom = shaderFromString(GL_GEOMETRY_SHADER, source);
+        free(source);
+    }
+    if (!(source = fileToUTF8(fragFile))) {
+        glDeleteShader(vert);
+        if (geomFile) glDeleteShader(geom);
+        return 0;
+    }
     frag = shaderFromString(GL_FRAGMENT_SHADER, source);
     free(source);
 
     program = glCreateProgram();
     glAttachShader(program, vert);
     glAttachShader(program, frag);
+    if (geomFile) glAttachShader(program, geom);
     glLinkProgram(program);
 
     glGetProgramiv(program, GL_LINK_STATUS, &status);
@@ -49,7 +59,14 @@ GLuint shaderFromString(GLenum type, const char * source) {
     return shader;
 }
 void texturedShaderInit(TexturedShader * shader) {
-    shader->shader = shaderProgramFromFile("assets/shaders/texturedShader.vert", "assets/shaders/texturedShader.frag");
+    shader->shader = shaderProgramFromFile("assets/shaders/texturedShader/vertex.vert", NULL, "assets/shaders/texturedShader/fragment.frag");
+    shader->texture0 = glGetUniformLocation(shader->shader, "primaryTex");
+    shader->projection = glGetUniformLocation(shader->shader, "projection");
+    shader->view = glGetUniformLocation(shader->shader, "view");
+    shader->model = glGetUniformLocation(shader->shader, "model");
+}
+void spriteShaderInit(SpriteShader * shader) {
+    shader->shader = shaderProgramFromFile("assets/shaders/spriteShader/vertex.vert", "assets/shaders/spriteShader/geometry.geom", "assets/shaders/spriteShader/fragment.frag");
     shader->texture0 = glGetUniformLocation(shader->shader, "primaryTex");
     shader->projection = glGetUniformLocation(shader->shader, "projection");
     shader->view = glGetUniformLocation(shader->shader, "view");

@@ -19,7 +19,8 @@ void modelFree(Model * model) {
 }
 void modelBufferData(
     Model * model, size_t numVerticies, Vertex * verticies,
-    size_t numIndicies, VertIndex * indicies, GLenum usage) {
+    size_t numIndicies, VertIndex * indicies, GLenum usage
+) {
     glBindVertexArray(model->vao);
     glBufferData(GL_ARRAY_BUFFER, numVerticies * sizeof(Vertex), verticies, usage);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndicies * sizeof(VertIndex), indicies, usage);
@@ -27,7 +28,8 @@ void modelBufferData(
 void modelGenerateQuad(
     Model * model,
     float uLeft, float uRight, float vBottom, float vTop,
-    GLenum usage) {
+    GLenum usage
+) {
     static const VertIndex indicies[] = {
         2, 0, 1,    2, 1, 3
     };
@@ -38,6 +40,16 @@ void modelGenerateQuad(
         -0.5f, -0.5f, 0.0f, uLeft,  vBottom,    // Bottom left
          0.5f, -0.5f, 0.0f, uRight, vBottom,    // Bottom right
     };
+
+    glBindVertexArray(model->vao);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, usage);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, usage);
+}
+void modelGeneratePoint(
+    Model * model, GLenum usage
+) {
+    static const VertIndex indicies[] = { 0 };
+    static const float verticies[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
     glBindVertexArray(model->vao);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, usage);

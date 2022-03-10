@@ -45,9 +45,9 @@ int main(int argc, char ** argv) {
 
     Model m;
     modelInit(&m);
-    modelGenerateQuad(&m, 0.0f, 1.0f, 0.0f, 1.0f, GL_STATIC_DRAW);
-    TexturedShader shader;
-    texturedShaderInit(&shader);
+    modelGeneratePoint(&m, GL_STATIC_DRAW);
+    SpriteShader shader;
+    spriteShaderInit(&shader);
     Texture t = textureLoad("assets/textures/brickTest.png");
 
     camera.x = 0.0f;
@@ -70,7 +70,8 @@ int main(int argc, char ** argv) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, t);
         glBindVertexArray(m.vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+        glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, NULL);
+        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

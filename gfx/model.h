@@ -16,11 +16,15 @@ void modelInit(Model * model);
 void modelFree(Model * model);
 void modelBufferData(
     Model * model, size_t numVerticies, Vertex * verticies,
-    size_t numIndicies, VertIndex * indicies, GLenum usage);
+    size_t numIndicies, VertIndex * indicies, GLenum usage
+);
 void modelGenerateQuad(
     Model * model,
     float uLeft, float uRight, float vBottom, float vTop,
-    GLenum usage);
-
+    GLenum usage
+);
+void modelGeneratePoint(
+    Model * model, GLenum usage
+);
 
 #endif

@@ -12,10 +12,12 @@ typedef struct TexturedShader {
     UniformLoc view;
     UniformLoc model;
 } TexturedShader;
+typedef TexturedShader SpriteShader;
 
-GLuint shaderProgramFromFile(const char * vertFile, const char * fragFile);
+GLuint shaderProgramFromFile(const char * vertFile, const char * geomFile, const char * fragFile);
 GLuint shaderFromString(GLenum type, const char * source);
 
 void texturedShaderInit(TexturedShader * shader);
+void spriteShaderInit(SpriteShader * shader);
 
 #endif
