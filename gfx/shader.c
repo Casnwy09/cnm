@@ -48,3 +48,10 @@ GLuint shaderFromString(GLenum type, const char * source) {
 
     return shader;
 }
+void texturedShaderInit(TexturedShader * shader) {
+    shader->shader = shaderProgramFromFile("assets/shaders/texturedShader.vert", "assets/shaders/texturedShader.frag");
+    shader->texture0 = glGetUniformLocation(shader->shader, "primaryTex");
+    shader->projection = glGetUniformLocation(shader->shader, "projection");
+    shader->view = glGetUniformLocation(shader->shader, "view");
+    shader->model = glGetUniformLocation(shader->shader, "model");
+}

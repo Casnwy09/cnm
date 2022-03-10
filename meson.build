@@ -13,6 +13,7 @@ sources = [
     'gfx/shader.c',
     'gfx/model.c',
     'gfx/texture.c',
+    'gfx/camera.c'
 ]
 sources_deps = [
     'deps/src/glad.c'

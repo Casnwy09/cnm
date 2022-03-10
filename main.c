@@ -5,9 +5,14 @@
 #include "gfx/shader.h"
 #include "gfx/model.h"
 #include "gfx/texture.h"
+#include "gfx/camera.h"
+
+static Camera camera;
 
 void framebufferSizeCallback(GLFWwindow * window, int width, int height) {
     glViewport(0, 0, width, height);
+    cameraUpdateFromResize(&camera, width, height);
+    printf("%f %f\n", camera.sw, camera.sh);
 }
 
 int main(int argc, char ** argv) {
@@ -35,13 +40,21 @@ int main(int argc, char ** argv) {
     }
 
     glViewport(0, 0, 800, 600);
+    cameraUpdateFromResize(&camera, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     Model m;
     modelInit(&m);
     modelGenerateQuad(&m, 0.0f, 1.0f, 0.0f, 1.0f, GL_STATIC_DRAW);
-    Shader s = shaderProgramFromFile("assets/shaders/test.vert", "assets/shaders/test.frag");
+    TexturedShader shader;
+    texturedShaderInit(&shader);
     Texture t = textureLoad("assets/textures/brickTest.png");
+
+    camera.x = 0.0f;
+    camera.y = 0.0f;
+    camera.zoom = 1.0f;
+    camera.ang = 0.0f;
+    cameraUpdateMatrix(&camera);
 
     while (!glfwWindowShouldClose(window)) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE))
@@ -50,8 +63,10 @@ int main(int argc, char ** argv) {
         glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(s);
-        glUniform1i(glGetUniformLocation(s, "primaryTex"), 0);
+        cameraUpdateMatrix(&camera);
+        glUseProgram(shader.shader);
+        glUniform1i(shader.texture0, 0);
+        cameraUpdateShaderUniforms(&camera, shader.projection, shader.view);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, t);
         glBindVertexArray(m.vao);
@@ -62,7 +77,7 @@ int main(int argc, char ** argv) {
     }
 
     modelFree(&m);
-    glDeleteProgram(s);
+    glDeleteProgram(shader.shader);
     glDeleteTextures(1, &t);
 
     glfwTerminate();
