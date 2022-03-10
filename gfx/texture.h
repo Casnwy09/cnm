@@ -2,6 +2,8 @@
 #define _texture_h_
 #include <glad/glad.h>
 
-GLuint textureLoad(const char * file);
+typedef GLuint Texture;
+
+Texture textureLoad(const char * file);
 
 #endif

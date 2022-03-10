@@ -18,6 +18,8 @@ sources_deps = [
     'deps/src/glad.c'
 ]
 
+run_target('run', command : 'scripts/run.sh')
+
 executable(
     'cnm',
     sources, sources_deps,

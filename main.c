@@ -4,6 +4,7 @@
 
 #include "gfx/shader.h"
 #include "gfx/model.h"
+#include "gfx/texture.h"
 
 void framebufferSizeCallback(GLFWwindow * window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -40,6 +41,7 @@ int main(int argc, char ** argv) {
     modelInit(&m);
     modelGenerateQuad(&m, 0.0f, 1.0f, 0.0f, 1.0f, GL_STATIC_DRAW);
     Shader s = shaderProgramFromFile("assets/shaders/test.vert", "assets/shaders/test.frag");
+    Texture t = textureLoad("assets/textures/brickTest.png");
 
     while (!glfwWindowShouldClose(window)) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE))
@@ -49,13 +51,19 @@ int main(int argc, char ** argv) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(s);
+        glUniform1i(glGetUniformLocation(s, "primaryTex"), 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, t);
         glBindVertexArray(m.vao);
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    modelFree(&m);
+    glDeleteProgram(s);
+    glDeleteTextures(1, &t);
 
     glfwTerminate();
     return 0;
