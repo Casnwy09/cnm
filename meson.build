@@ -6,14 +6,14 @@ gl_dep = [dependency('gl'), dependency('x11'), dependency('xrandr'), dependency(
 thread_dep = dependency('threads')
 
 sources = [
-    'main.c',
+    'src/main.c',
 
-    'util/util.c',
+    'src/util/util.c',
 
-    'gfx/shader.c',
-    'gfx/model.c',
-    'gfx/texture.c',
-    'gfx/camera.c'
+    'src/gfx/shader.c',
+    'src/gfx/model.c',
+    'src/gfx/texture.c',
+    'src/gfx/camera.c'
 ]
 sources_deps = [
     'deps/src/glad.c'
