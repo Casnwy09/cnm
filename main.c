@@ -1,5 +1,10 @@
 #include <stdio.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
 
 int main(int argc, char **argv) {
     if (!glfwInit()) {
@@ -17,8 +22,24 @@ int main(int argc, char **argv) {
         glfwTerminate();
         return -1;
     }
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        printf("main: Couldn't load the glad loader!\n");
+        glfwTerminate();
+        return -1;
+    }
+
+    glViewport(0, 0, 800, 600);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     while (!glfwWindowShouldClose(window)) {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE))
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+        glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
