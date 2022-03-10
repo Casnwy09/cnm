@@ -7,9 +7,20 @@ thread_dep = dependency('threads')
 
 sources = [
     'main.c',
+
+    'util/util.c',
+
+    'gfx/shader.c',
+    'gfx/model.c',
+    'gfx/texture.c',
 ]
 sources_deps = [
     'deps/src/glad.c'
 ]
 
-executable('cnm', sources, sources_deps, dependencies : [glfw_dep, cglm_dep, gl_dep, thread_dep], include_directories : deps_dir)
+executable(
+    'cnm',
+    sources, sources_deps,
+    dependencies : [glfw_dep, cglm_dep, gl_dep, thread_dep],
+    include_directories : [deps_dir]
+)

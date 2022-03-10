@@ -2,11 +2,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+#include "gfx/shader.h"
+#include "gfx/model.h"
+
+void framebufferSizeCallback(GLFWwindow * window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char ** argv) {
     if (!glfwInit()) {
         printf("main: Couldn't initialize GLFW!\n");
         return -1;
@@ -31,7 +34,12 @@ int main(int argc, char **argv) {
     }
 
     glViewport(0, 0, 800, 600);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+    Model m;
+    modelInit(&m);
+    modelGenerateQuad(&m, 0.0f, 1.0f, 0.0f, 1.0f, GL_STATIC_DRAW);
+    Shader s = shaderProgramFromFile("assets/shaders/test.vert", "assets/shaders/test.frag");
 
     while (!glfwWindowShouldClose(window)) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE))
@@ -39,6 +47,11 @@ int main(int argc, char **argv) {
 
         glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(s);
+        glBindVertexArray(m.vao);
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
