@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "util.h"
 
 char * fileToUTF8(const char * filePath) {
     FILE * fp;
@@ -17,4 +18,13 @@ char * fileToUTF8(const char * filePath) {
     fclose(fp);
 
     return str;
+}
+
+void generateModelMatrix(
+    mat4 model, float x, float y, float z,
+    float sx, float sy, float ang
+) {
+    glm_translate_make(model, (vec3){x, y, z});
+    glm_rotate_z(model, ang, model);
+    glm_scale(model, (vec3){sx, sy, 1.0});
 }

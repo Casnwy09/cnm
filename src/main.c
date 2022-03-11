@@ -6,13 +6,13 @@
 #include "gfx/model.h"
 #include "gfx/texture.h"
 #include "gfx/camera.h"
+#include "util/util.h"
 
 static Camera camera;
 
 void framebufferSizeCallback(GLFWwindow * window, int width, int height) {
     glViewport(0, 0, width, height);
     cameraUpdateFromResize(&camera, width, height);
-    printf("%f %f\n", camera.sw, camera.sh);
 }
 
 int main(int argc, char ** argv) {
@@ -44,11 +44,21 @@ int main(int argc, char ** argv) {
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     Model m;
-    modelInit(&m);
-    modelGeneratePoint(&m, GL_STATIC_DRAW);
+    spriteModelInit(&m);
     SpriteShader shader;
     spriteShaderInit(&shader);
     Texture t = textureLoad("assets/textures/brickTest.png");
+
+    SpriteVertexEntry sprites[3] = {
+        {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}},
+        {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}},
+        {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}}
+    };
+    generateModelMatrix(sprites[0].model, 0.25f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
+    generateModelMatrix(sprites[1].model, -0.25f, 0.25f, 0.0f, 1.0f, 1.0f, 45.0f / 180.0f * 3.1415962f);
+    generateModelMatrix(sprites[2].model, 0.0f, -0.25f, 0.0f, 2.0f, 1.0f, 0.0f);
+    modelBufferVerticies(&m, sizeof(sprites), sprites, GL_STATIC_DRAW);
+    m.numVerticies = sizeof(sprites) / sizeof(SpriteVertexEntry);
 
     camera.x = 0.0f;
     camera.y = 0.0f;
@@ -60,6 +70,11 @@ int main(int argc, char ** argv) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
+        if (glfwGetKey(window, GLFW_KEY_W))
+            camera.y += 0.01f;
+        if (glfwGetKey(window, GLFW_KEY_S))
+            camera.y -= 0.01f;
+
         glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -69,8 +84,9 @@ int main(int argc, char ** argv) {
         cameraUpdateShaderUniforms(&camera, shader.projection, shader.view);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, t);
-        glBindVertexArray(m.vao);
-        glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, NULL);
+        spriteModelRender(&m);
+        //glBindVertexArray(m.vao);
+        //glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, NULL);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
         glfwSwapBuffers(window);

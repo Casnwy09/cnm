@@ -70,5 +70,4 @@ void spriteShaderInit(SpriteShader * shader) {
     shader->texture0 = glGetUniformLocation(shader->shader, "primaryTex");
     shader->projection = glGetUniformLocation(shader->shader, "projection");
     shader->view = glGetUniformLocation(shader->shader, "view");
-    shader->model = glGetUniformLocation(shader->shader, "model");
 }
