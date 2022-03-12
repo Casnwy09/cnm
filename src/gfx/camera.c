@@ -18,7 +18,6 @@ void cameraUpdateShaderUniforms(const Camera * cam, UniformLoc proj, UniformLoc 
     glUniformMatrix4fv(view, 1, GL_FALSE, (void *)cam->mats.view);
 }
 vec2s cameraGetWorldCoordsFromMouse(Camera * cam, GLFWwindow * window) {
-    alignas(16) mat4 m;
     int w, h;
     double mx, my;
 
@@ -27,8 +26,11 @@ vec2s cameraGetWorldCoordsFromMouse(Camera * cam, GLFWwindow * window) {
 
     mx = (mx / (double)w) * 2.0f - 1.0f;
     my = (my / (double)h) * -2.0f + 1.0f;
-
-    vec4s mousePos = (vec4s){{(float)mx, (float)my, 0.0f, 1.0f}};
+    return cameraGetWorldCoordsFromScreenSpace(cam, (float)mx, (float)my);
+}
+vec2s cameraGetWorldCoordsFromScreenSpace(Camera * cam, float nx, float ny) {
+    alignas(16) mat4 m;
+    vec4s mousePos = (vec4s){{nx, ny, 0.0f, 1.0f}};
     glm_mat4_mul(cam->mats.projInv, cam->mats.viewInv, m);
     glm_mat4_mulv(m, mousePos.raw, mousePos.raw);
     return (vec2s){{mousePos.x, mousePos.y}};

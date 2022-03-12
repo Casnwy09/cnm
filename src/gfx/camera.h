@@ -25,5 +25,6 @@ void cameraUpdateMatrix(Camera * cam);
 void cameraUpdateFromResize(Camera * cam, int newWindowWidth, int newWindowHeight);
 void cameraUpdateShaderUniforms(const Camera * cam, UniformLoc proj, UniformLoc view);
 vec2s cameraGetWorldCoordsFromMouse(Camera * cam, GLFWwindow * window);
+vec2s cameraGetWorldCoordsFromScreenSpace(Camera * cam, float nx, float ny);
 
 #endif

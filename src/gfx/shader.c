@@ -9,15 +9,23 @@ GLuint shaderProgramFromFile(const char * vertFile, const char * geomFile, const
     GLint status;
     char log[1024], * source;
 
-    if (!(source = fileToUTF8(vertFile))) return 0;
+    if (!(source = fileToUTF8(vertFile))) {
+        printf("shaderProgramFromFile: Couldn't load the file \"%s\"!\n", vertFile);
+        return 0;
+    }
     vert = shaderFromString(GL_VERTEX_SHADER, source);
     free(source);
     if (geomFile) {
-        if (!(source = fileToUTF8(geomFile))) { glDeleteShader(vert); return 0; }
+        if (!(source = fileToUTF8(geomFile))) {
+            printf("shaderProgramFromFile: Couldn't load the file \"%s\"!\n", geomFile);
+            glDeleteShader(vert);
+            return 0;
+        }
         geom = shaderFromString(GL_GEOMETRY_SHADER, source);
         free(source);
     }
     if (!(source = fileToUTF8(fragFile))) {
+        printf("shaderProgramFromFile: Couldn't load the file \"%s\"!\n", fragFile);
         glDeleteShader(vert);
         if (geomFile) glDeleteShader(geom);
         return 0;
@@ -80,4 +88,12 @@ void flatShaderInit(FlatShader * shader) {
     shader->projection = glGetUniformLocation(shader->shader, "projection");
     shader->view = glGetUniformLocation(shader->shader, "view");
     shader->model = glGetUniformLocation(shader->shader, "model");
+}
+void outlineSpriteShaderInit(OutlineSpriteShader * shader) {
+    shader->shader = shaderProgramFromFile("assets/shaders/outline/vertex.vert", NULL, "assets/shaders/outline/fragment.frag");
+    shader->outlineColor = glGetUniformLocation(shader->shader, "outlineColor");
+    glUniform4f(shader->outlineColor, 0.07f, 0.03f, 0.05f, 1.0f); // Default black
+    //shader->model = glGetUniformLocation(shader->shader, "scale");
+    shader->texture0 = glGetUniformLocation(shader->shader, "primaryTex");
+    shader->pixelStep = glGetUniformLocation(shader->shader, "pixelStep");
 }

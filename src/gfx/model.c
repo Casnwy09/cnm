@@ -4,11 +4,11 @@
 static void spriteModelInit(Model * spriteModel);
 
 void modelBufferVerticies(Model * model, size_t dataSize, const void * data, GLenum usage) {
-    glBindVertexArray(model->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, model->vbo);
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, usage);
 }
 void modelBufferIndicies(Model * model, size_t dataSize, const void * data, GLenum usage) {
-    glBindVertexArray(model->vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, usage);
 }
 
@@ -88,16 +88,16 @@ void spriteModelRender(Model * spriteModel) {
     glDrawArraysInstanced(GL_POINTS, 0, 1, spriteModel->numVerticies);
 }
 
-void createQuadModel(Model * model, vec4 uvs) {
+void createQuadModel(Model * model, float width, float height, float uvLeft, float uvRight, float uvTop, float uvBottom) {
     static const VertIndex indicies[] = {
         2, 0, 1,    2, 1, 3
     };
     Vertex verticies[] = {
         // x, y, z,   u, v
-        { .pos = {{-0.5f,  0.5f, 0.0f}}, .uv = {{uvs[0], uvs[2]}} },       // Top left
-        { .pos = {{ 0.5f,  0.5f, 0.0f}}, .uv = {{uvs[1], uvs[2]}} },       // Top right
-        { .pos = {{-0.5f, -0.5f, 0.0f}}, .uv = {{uvs[0], uvs[3]}} },    // Bottom left
-        { .pos = {{ 0.5f, -0.5f, 0.0f}}, .uv = {{uvs[1], uvs[3]}} },    // Bottom right
+        { .pos = {{-0.5f*width,  0.5f*height, 0.0f}}, .uv = {{uvLeft,  uvTop}} },       // Top left
+        { .pos = {{ 0.5f*width,  0.5f*height, 0.0f}}, .uv = {{uvRight, uvTop}} },       // Top right
+        { .pos = {{-0.5f*width, -0.5f*height, 0.0f}}, .uv = {{uvLeft,  uvBottom}} },    // Bottom left
+        { .pos = {{ 0.5f*width, -0.5f*height, 0.0f}}, .uv = {{uvRight, uvBottom}} },    // Bottom right
     };
 
     modelInit(model, VT_GENERIC, true);

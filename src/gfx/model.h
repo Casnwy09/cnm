@@ -44,7 +44,7 @@ void modelRender(Model * model, GLenum mode);
 void modelRenderVerticies(Model * model, GLenum mode);
 void spriteModelRender(Model * spriteModel);
 
-void createQuadModel(Model * model, vec4 uvs);
+void createQuadModel(Model * model, float width, float height, float uvLeft, float uvRight, float uvTop, float uvBottom);
 void createPointModel(Model * model);
 
 #endif
