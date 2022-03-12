@@ -4,16 +4,18 @@
 #include <glad/glad.h>
 #include <cglm/cglm.h>
 #include <stdalign.h>
+#include <cglm/types-struct.h>
 
 typedef unsigned int VertIndex;
 typedef struct Vertex {
-    float x, y, z;
-    float u, v;
+    vec3s pos;
+    vec2s uv;
+    vec4s color;
 } Vertex;
 typedef struct SpriteVertexEntry {
-    alignas(16) mat4 model;
-    vec2 uvPos;
-    vec2 uvSize;
+    alignas(16) mat4s model;
+    vec2s uvPos;
+    vec2s uvSize;
 } SpriteVertexEntry;
 typedef struct Model {
     GLuint vao, vbo, ebo;
@@ -29,6 +31,7 @@ void modelFree(Model * model);
 void spriteModelInit(Model * spriteModel);
 
 void modelRender(Model * model, GLenum mode);
+void modelRenderVerticies(Model * model, GLenum mode);
 void spriteModelRender(Model * spriteModel);
 
 void createQuadModel(Model * model, vec4 uvs);

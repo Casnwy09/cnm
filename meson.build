@@ -9,11 +9,13 @@ sources = [
     'src/main.c',
 
     'src/util/util.c',
+    'src/util/math.c',
 
     'src/gfx/shader.c',
     'src/gfx/model.c',
     'src/gfx/texture.c',
-    'src/gfx/camera.c'
+    'src/gfx/camera.c',
+    'src/gfx/lineRenderer.c'
 ]
 sources_deps = [
     'deps/src/glad.c'

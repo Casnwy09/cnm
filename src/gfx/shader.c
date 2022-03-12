@@ -71,3 +71,11 @@ void spriteShaderInit(SpriteShader * shader) {
     shader->projection = glGetUniformLocation(shader->shader, "projection");
     shader->view = glGetUniformLocation(shader->shader, "view");
 }
+void flatShaderInit(FlatShader * shader) {
+    shader->shader = shaderProgramFromFile("assets/shaders/flatShader/vertex.vert", NULL, "assets/shaders/flatShader/fragment.frag");
+    shader->mainColor = glGetUniformLocation(shader->shader, "mainColor");
+    glUniform4f(shader->mainColor, 1.0f, 1.0f, 1.0f, 1.0f); // Default white
+    shader->projection = glGetUniformLocation(shader->shader, "projection");
+    shader->view = glGetUniformLocation(shader->shader, "view");
+    shader->model = glGetUniformLocation(shader->shader, "model");
+}

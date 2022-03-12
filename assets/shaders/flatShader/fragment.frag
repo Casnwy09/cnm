@@ -4,8 +4,8 @@ out vec4 FragColor;
 in vec2 texUV;
 in vec4 color;
 
-uniform sampler2D primaryTex;
+uniform vec4 mainColor;
 
 void main() {
-    FragColor = texture(primaryTex, texUV) * color;
+    FragColor = mainColor * color;
 }

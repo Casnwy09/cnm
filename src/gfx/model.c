@@ -15,10 +15,12 @@ void modelInit(Model * model) {
     glBindVertexArray(model->vao);
     glBindBuffer(GL_ARRAY_BUFFER, model->vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->ebo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(0 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(0));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, uv));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, color));
+    glEnableVertexAttribArray(2);
 }
 void modelFree(Model * model) {
     glDeleteVertexArrays(1, &model->vao);
@@ -60,6 +62,10 @@ void modelRender(Model * model, GLenum mode) {
     glBindVertexArray(model->vao);
     glDrawElements(mode, model->numIndicies, GL_UNSIGNED_INT, NULL);
 }
+void modelRenderVerticies(Model * model, GLenum mode) {
+    glBindVertexArray(model->vao);
+    glDrawArrays(mode, 0, model->numVerticies);
+}
 void spriteModelRender(Model * spriteModel) {
     glBindVertexArray(spriteModel->vao);
     glDrawArraysInstanced(GL_POINTS, 0, 1, spriteModel->numVerticies);
@@ -71,10 +77,10 @@ void createQuadModel(Model * model, vec4 uvs) {
     };
     Vertex verticies[] = {
         // x, y, z,   u, v
-        { -0.5f,  0.5f, 0.0f, uvs[0], uvs[2] },       // Top left
-        {  0.5f,  0.5f, 0.0f, uvs[1], uvs[2] },       // Top right
-        { -0.5f, -0.5f, 0.0f, uvs[0], uvs[3] },    // Bottom left
-        {  0.5f, -0.5f, 0.0f, uvs[1], uvs[3] },    // Bottom right
+        { .pos = {{-0.5f,  0.5f, 0.0f}}, .uv = {{uvs[0], uvs[2]}}, .color = {{1.0f, 1.0f, 1.0f, 1.0f}} },       // Top left
+        { .pos = {{ 0.5f,  0.5f, 0.0f}}, .uv = {{uvs[1], uvs[2]}}, .color = {{1.0f, 1.0f, 1.0f, 1.0f}} },       // Top right
+        { .pos = {{-0.5f, -0.5f, 0.0f}}, .uv = {{uvs[0], uvs[3]}}, .color = {{1.0f, 1.0f, 1.0f, 1.0f}} },    // Bottom left
+        { .pos = {{ 0.5f, -0.5f, 0.0f}}, .uv = {{uvs[1], uvs[3]}}, .color = {{1.0f, 1.0f, 1.0f, 1.0f}} },    // Bottom right
     };
 
     modelInit(model);
@@ -85,10 +91,10 @@ void createQuadModel(Model * model, vec4 uvs) {
 }
 void createPointModel(Model * model) {
     static const VertIndex indicies[] = { 0 };
-    static const Vertex verticies[] = { {0.0f, 0.0f, 0.0f, 0.0f, 0.0f} };
+    static const Vertex verticies = { .pos = {{ 0.0f, 0.0f, 0.0f}}, .uv = {{0.0f, 0.0f}}, .color = {{1.0f, 1.0f, 1.0f, 1.0f}} };
 
     modelInit(model);
-    modelBufferVerticies(model, sizeof(verticies), verticies, GL_STATIC_DRAW);
+    modelBufferVerticies(model, sizeof(verticies), &verticies, GL_STATIC_DRAW);
     modelBufferIndicies(model, sizeof(indicies), indicies, GL_STATIC_DRAW);
     model->numIndicies = 1;
     model->numVerticies = 1;
