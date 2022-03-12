@@ -1,9 +1,16 @@
 #ifndef _texture_h_
 #define _texture_h_
 #include <glad/glad.h>
+#include <cglm/types-struct.h>
+#include "shader.h"
 
-typedef GLuint Texture;
+typedef struct Texture {
+    GLuint texID;
+    int width, height;
+} Texture;
 
-Texture textureLoad(const char * file);
+void textureLoad(Texture * tex, const char * file);
+void textureActivate(Texture * tex, UniformLoc sampler2D, int textureSlot);
+vec2s texturePixelToUV(Texture * tex, int px, int py);
 
 #endif

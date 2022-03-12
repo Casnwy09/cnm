@@ -6,6 +6,8 @@ typedef struct LineRendererSegment {
     float size;
     vec2s pos;
     vec4s color;
+
+    vec2s uv1, uv2;
 } LineRendererSegment;
 
 typedef struct LineRenderer {
@@ -15,7 +17,7 @@ typedef struct LineRenderer {
     size_t segmentsCapacity;
     size_t numSegments;
     LineRendererSegment * segments;
-    Vertex * verticies;
+    ColoredVertex * verticies;
 } LineRenderer;
 
 void lineRendererCreate(LineRenderer * lr, size_t numSegments);

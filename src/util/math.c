@@ -11,7 +11,7 @@ vec2s lineIntersection(vec2s l1a, vec2s l1b, vec2s l2a, vec2s l2b) {
   
     float det = a1*b2 - a2*b1;
   
-    if (det == 0)
+    if (det == 0)   // Lines are parrallel
     {
         return (vec2s){{FLT_MAX, FLT_MAX}};
     }

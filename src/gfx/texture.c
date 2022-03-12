@@ -5,13 +5,12 @@
 #include <stb_image.h>
 #include "texture.h"
 
-Texture textureLoad(const char * file) {
-    Texture texture;
+void textureLoad(Texture * tex, const char * file) {
     int width, height, channels;
     uint8_t * imgData;
 
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glGenTextures(1, &tex->texID);
+    glBindTexture(GL_TEXTURE_2D, tex->texID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -26,6 +25,14 @@ Texture textureLoad(const char * file) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, imgFormat, GL_UNSIGNED_BYTE, imgData);
     }
     stbi_image_free(imgData);
-
-    return texture;
+    tex->width = width;
+    tex->height = height;
+}
+void textureActivate(Texture * tex, UniformLoc sampler2D, int textureSlot) {
+    glActiveTexture(GL_TEXTURE0 + textureSlot);
+    glBindTexture(GL_TEXTURE_2D, tex->texID);
+    glUniform1i(sampler2D, textureSlot);
+}
+vec2s texturePixelToUV(Texture * tex, int px, int py) {
+    return (vec2s){.x = (float)px / (float)tex->width, .y = 1.0f - (float)py / (float)tex->height};
 }

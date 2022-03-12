@@ -50,11 +50,16 @@ int main(int argc, char ** argv) {
     //spriteModelInit(&m);
     //SpriteShader shader;
     //spriteShaderInit(&shader);
-    FlatShader shader;
-    flatShaderInit(&shader);
-    Texture t = textureLoad("assets/textures/brickTest.png");
+
+    TexturedShader shader;
+    texturedShaderInit(&shader, "assets/shaders/playerShaders/line.vert", NULL, "assets/shaders/playerShaders/line.frag");
+    vec4s shaderColor = (vec4s){.x = 1.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f};
+
+    Texture t[2];
+    textureLoad(t + 0, "assets/textures/player.png");
+    textureLoad(t + 1, "assets/textures/playerMask.png");
     LineRenderer line;
-    lineRendererCreate(&line, 4);
+    lineRendererCreate(&line, 3);
 
     //SpriteVertexEntry sprites[3] = {
     //    {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}},
@@ -73,16 +78,15 @@ int main(int argc, char ** argv) {
     camera.ang = 0.0f;
     cameraUpdateMatrix(&camera);
 
-    line.segments[0].pos.x = -10.0f;
-    line.segments[0].pos.y = 2.0f;
-    line.segments[1].pos.x = 0.0f;
-    line.segments[1].pos.y = 0.0f;
-    line.segments[2].pos.x = 10.0f;
-    line.segments[2].pos.y = 4.0f;
-    line.segments[3].pos.x = 8.0f;
-    line.segments[3].pos.y = -8.0f;
-    line.segments[1].size = 1.0f;
-    line.segments[1].color = (vec4s){{1.0f, 0.0f, 0.0f, 1.0f}};
+    line.segments[0].pos = (vec2s){ .x = -10.0f, .y = 0.0f };
+    line.segments[0].uv1 = texturePixelToUV(t+0, 16, 14);
+    line.segments[0].uv2 = texturePixelToUV(t+0, 18, 14);
+    line.segments[1].pos = (vec2s){ .x = 0.0f, .y = 0.0f };
+    line.segments[1].uv1 = texturePixelToUV(t+0, 16, 23);
+    line.segments[1].uv2 = texturePixelToUV(t+0, 18, 23);
+    line.segments[2].pos = (vec2s){ .x = 10.0f, .y = 0.0f };
+    line.segments[2].uv1 = texturePixelToUV(t+0, 16, 32);
+    line.segments[2].uv2 = texturePixelToUV(t+0, 18, 32);
 
     int grabMode = -1;
 
@@ -94,6 +98,13 @@ int main(int argc, char ** argv) {
             camera.y += 0.1f;
         if (glfwGetKey(window, GLFW_KEY_S))
             camera.y -= 0.1f;
+
+        if (glfwGetKey(window, GLFW_KEY_U) && shaderColor.x < 1.0f) shaderColor.x += 0.02f;
+        if (glfwGetKey(window, GLFW_KEY_J) && shaderColor.x > 0.0f) shaderColor.x -= 0.02f;
+        if (glfwGetKey(window, GLFW_KEY_I) && shaderColor.y < 1.0f) shaderColor.y += 0.02f;
+        if (glfwGetKey(window, GLFW_KEY_K) && shaderColor.y > 0.0f) shaderColor.y -= 0.02f;
+        if (glfwGetKey(window, GLFW_KEY_O) && shaderColor.z < 1.0f) shaderColor.z += 0.02f;
+        if (glfwGetKey(window, GLFW_KEY_L) && shaderColor.z > 0.0f) shaderColor.z -= 0.02f;
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
             vec2s mpos = cameraGetWorldCoordsFromMouse(&camera, window);
@@ -141,15 +152,11 @@ int main(int argc, char ** argv) {
 
         cameraUpdateMatrix(&camera);
         glUseProgram(shader.shader);
-        //glUniform1i(shader.texture0, 0);
+        glUniform4f(shader.mainColor, shaderColor.x, shaderColor.y, shaderColor.z, shaderColor.w);
+        textureActivate(t+0, shader.texture0, 0);
+        textureActivate(t+1, shader.texture1, 1);
         cameraUpdateShaderUniforms(&camera, shader.projection, shader.view);
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_2D, t);
         lineRendererRender(&line);
-        //spriteModelRender(&m);
-        //glBindVertexArray(m.vao);
-        //glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, NULL);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -158,7 +165,8 @@ int main(int argc, char ** argv) {
     //modelFree(&m);
     lineRendererDestroy(&line);
     glDeleteProgram(shader.shader);
-    glDeleteTextures(1, &t);
+    glDeleteTextures(1, &t[0].texID);
+    glDeleteTextures(1, &t[1].texID);
 
     glfwTerminate();
     return 0;

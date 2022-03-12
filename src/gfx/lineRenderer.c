@@ -10,7 +10,7 @@
 
 void lineRendererCreate(LineRenderer * lr, size_t numSegments) {
     memset(lr, 0, sizeof(*lr));
-    modelInit(&lr->model);
+    modelInit(&lr->model, VT_COLORED, false);
     lineRendererResize(lr, numSegments);
 }
 void lineRendererDestroy(LineRenderer * lr) {
@@ -36,10 +36,12 @@ void lineRendererUpdateModel(LineRenderer * lr) {
     lr->verticies[0].pos.y = lr->segments[0].pos.y + linePerp[1].y * lr->segments[0].size;
     lr->verticies[0].pos.z = lr->z;
     lr->verticies[0].color = lr->segments[0].color;
+    lr->verticies[0].uv = lr->segments[0].uv1;
     lr->verticies[1].pos.x = lr->segments[0].pos.x - linePerp[1].x * lr->segments[0].size;
     lr->verticies[1].pos.y = lr->segments[0].pos.y - linePerp[1].y * lr->segments[0].size;
     lr->verticies[1].pos.z = lr->z;
     lr->verticies[1].color = lr->segments[0].color;
+    lr->verticies[1].uv = lr->segments[0].uv2;
 
     for (i = 1; i < lr->numSegments - 1; i++) {
         linePerp[0] = linePerp[1];
@@ -62,10 +64,17 @@ void lineRendererUpdateModel(LineRenderer * lr) {
             bb.x = lr->segments[i].pos.x + linePerp[1].x * lr->segments[i].size;
             bb.y = lr->segments[i].pos.y + linePerp[1].y * lr->segments[i].size;
             finalPt = lineIntersection(aa, ab, ba, bb);
+
+            if (finalPt.x == FLT_MAX || finalPt.y == FLT_MAX) {
+                finalPt.x = lr->segments[i].pos.x + linePerp[1].x * lr->segments[i].size;
+                finalPt.y = lr->segments[i].pos.y + linePerp[1].y * lr->segments[i].size;
+            }
+
             lr->verticies[i*2+j].pos.x = finalPt.x;
             lr->verticies[i*2+j].pos.y = finalPt.y;
             lr->verticies[i*2+j].pos.z = lr->z;
             lr->verticies[i*2+j].color = lr->segments[i].color;
+            lr->verticies[i*2+j].uv = j ? lr->segments[i].uv2 : lr->segments[i].uv1;
             glm_vec2_negate(linePerp[0].raw);
             glm_vec2_negate(linePerp[1].raw);
         }
@@ -81,13 +90,15 @@ void lineRendererUpdateModel(LineRenderer * lr) {
     lr->verticies[i*2+0].pos.y = lr->segments[i].pos.y + linePerp[1].y * lr->segments[i].size;
     lr->verticies[i*2+0].pos.z = lr->z;
     lr->verticies[i*2+0].color = lr->segments[i].color;
+    lr->verticies[i*2+0].uv = lr->segments[i].uv1;
     lr->verticies[i*2+1].pos.x = lr->segments[i].pos.x - linePerp[1].x * lr->segments[i].size;
     lr->verticies[i*2+1].pos.y = lr->segments[i].pos.y - linePerp[1].y * lr->segments[i].size;
     lr->verticies[i*2+1].pos.z = lr->z;
     lr->verticies[i*2+1].color = lr->segments[i].color;
+    lr->verticies[i*2+1].uv = lr->segments[i].uv2;
 
     lr->model.numVerticies = lr->numSegments * 2;
-    modelBufferVerticies(&lr->model, sizeof(Vertex) * lr->model.numVerticies, lr->verticies, GL_DYNAMIC_DRAW);
+    modelBufferVerticies(&lr->model, sizeof(ColoredVertex) * lr->model.numVerticies, lr->verticies, GL_DYNAMIC_DRAW);
 }
 void lineRendererRender(LineRenderer * lr) {
     modelRenderVerticies(&lr->model, GL_TRIANGLE_STRIP);
@@ -99,12 +110,14 @@ void lineRendererResize(LineRenderer * lr, size_t newNumSegments) {
     if (lr->numSegments > lr->segmentsCapacity) {
         lr->segmentsCapacity = (lr->numSegments / SEGMENTS_INC + 1) * SEGMENTS_INC;
         lr->segments = realloc(lr->segments, sizeof(LineRendererSegment) * lr->segmentsCapacity);
-        lr->verticies = realloc(lr->verticies, sizeof(Vertex) * 2 * lr->segmentsCapacity);
+        lr->verticies = realloc(lr->verticies, sizeof(ColoredVertex) * 2 * lr->segmentsCapacity);
 
         for (size_t i = oldSegmentsCapacity; i < lr->segmentsCapacity; i++) {
             lr->segments[i].color = (vec4s){.w = 1.0f, .x = 1.0f, .y = 1.0f, .z = 1.0f};
             lr->segments[i].size = 1.0f;
             lr->segments[i].pos = (vec2s){.x = 0.0f, .y = 0.0f};
+            lr->segments[i].uv1 = (vec2s){.x = 0.0f, .y = 1.0f};
+            lr->segments[i].uv2 = (vec2s){.x = 1.0f, .y = 1.0f};
         }
 
         for (size_t i = oldSegmentsCapacity; i < lr->segmentsCapacity * 2; i++) {

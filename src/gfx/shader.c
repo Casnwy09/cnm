@@ -58,11 +58,13 @@ GLuint shaderFromString(GLenum type, const char * source) {
 
     return shader;
 }
-void texturedShaderInit(TexturedShader * shader) {
-    shader->shader = shaderProgramFromFile("assets/shaders/texturedShader/vertex.vert", NULL, "assets/shaders/texturedShader/fragment.frag");
+void texturedShaderInit(TexturedShader * shader, const char * vert, const char * geom, const char * frag) {
+    shader->shader = shaderProgramFromFile(vert, geom, frag);
     shader->texture0 = glGetUniformLocation(shader->shader, "primaryTex");
+    shader->texture1 = glGetUniformLocation(shader->shader, "maskTex");
     shader->projection = glGetUniformLocation(shader->shader, "projection");
     shader->view = glGetUniformLocation(shader->shader, "view");
+    shader->mainColor = glGetUniformLocation(shader->shader, "mainColor");
     shader->model = glGetUniformLocation(shader->shader, "model");
 }
 void spriteShaderInit(SpriteShader * shader) {
