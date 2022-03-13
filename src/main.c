@@ -12,6 +12,7 @@
 #include "util/math.h"
 #include "gfx/window.h"
 #include "gfx/framebuffer.h"
+#include "gfx/anim/limbIk.h"
 
 static Camera camera;
 static Camera spriteCamera;
@@ -69,6 +70,13 @@ int main(int argc, char ** argv) {
         1.0f + 1.0f / (float)spriteScreen.height,
         -1.0f / (float)spriteScreen.height);
 
+    LimbIKState state;
+    limbIkCreate(
+        &state,
+        (vec2s){ .x = 1.0f, .y = 10.0f },
+        6.0f, 8.0f, 2.0f, -0.5f*PI
+    );
+
     //SpriteVertexEntry sprites[3] = {
     //    {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}},
     //    {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}},
@@ -86,29 +94,16 @@ int main(int argc, char ** argv) {
     camera.ang = 0.0f;
     cameraUpdateMatrix(&camera);
 
-    line.segments[0].pos = (vec2s){ .x = 1.0f, .y = 10.0f };
-    line.segments[0].uv1 = texturePixelToUV(t+0, 16, 14);
-    line.segments[0].uv2 = texturePixelToUV(t+0, 18, 14);
-    line.segments[0].size = 0.8f;
-    line.segments[1].pos = (vec2s){ .x = 4.0f, .y = 8.0f };
-    line.segments[1].uv1 = texturePixelToUV(t+0, 16, 16);
-    line.segments[1].uv2 = texturePixelToUV(t+0, 18, 16);
-    line.segments[1].size = 0.8f;
-    line.segments[2].pos = (vec2s){ .x = 3.0f, .y = 0.0f };
-    line.segments[2].uv1 = texturePixelToUV(t+0, 16, 23);
-    line.segments[2].uv2 = texturePixelToUV(t+0, 18, 23);
-    line.segments[2].size = 0.8f;
-    line.segments[3].pos = (vec2s){ .x = 4.0f, .y = -10.0f };
-    line.segments[3].uv1 = texturePixelToUV(t+0, 16, 30);
-    line.segments[3].uv2 = texturePixelToUV(t+0, 18, 30);
-    line.segments[3].size = 0.7f;
-    line.segments[4].pos = (vec2s){ .x = 8.0f, .y = -10.0f };
-    line.segments[4].uv1 = texturePixelToUV(t+0, 16, 32);
-    line.segments[4].uv2 = texturePixelToUV(t+0, 18, 32);
-    line.segments[4].size = 0.75f;
+    for (int i = 0; i < line.numSegments; i++) {
+        float l = (float)i / ((float)line.numSegments - 1.0f);
+        line.segments[i].pos = (vec2s){ .x = 1.0f, .y = -20.0f*l+10.0f };
+        line.segments[i].uv1 = texturePixelToUV(t+0, 16, (32.f-14.f)*l+14.f);
+        line.segments[i].uv2 = texturePixelToUV(t+0, 18, (32.f-14.f)*l+14.f);
+        line.segments[i].size = 0.8f;
+    }
 
-    int currentSegment = 0;
-    bool lastLeft = false, lastRight = false, left = false, right = false;
+    //int currentSegment = 0;
+    //bool lastLeft = false, lastRight = false, left = false, right = false;
 
     while (!glfwWindowShouldClose(window.internal)) {
         if (glfwGetKey(window.internal, GLFW_KEY_ESCAPE))
@@ -119,7 +114,7 @@ int main(int argc, char ** argv) {
         if (glfwGetKey(window.internal, GLFW_KEY_S))
             camera.y -= 0.1f;
 
-        if (glfwGetKey(window.internal, GLFW_KEY_U) && shaderColor.x < 1.0f) shaderColor.x += 0.02f;
+        /*if (glfwGetKey(window.internal, GLFW_KEY_U) && shaderColor.x < 1.0f) shaderColor.x += 0.02f;
         if (glfwGetKey(window.internal, GLFW_KEY_J) && shaderColor.x > 0.0f) shaderColor.x -= 0.02f;
         if (glfwGetKey(window.internal, GLFW_KEY_I) && shaderColor.y < 1.0f) shaderColor.y += 0.02f;
         if (glfwGetKey(window.internal, GLFW_KEY_K) && shaderColor.y > 0.0f) shaderColor.y -= 0.02f;
@@ -137,7 +132,18 @@ int main(int argc, char ** argv) {
         if (glfwGetKey(window.internal, GLFW_KEY_UP)) line.segments[currentSegment].pos.y    += 0.1f;
         if (glfwGetKey(window.internal, GLFW_KEY_DOWN)) line.segments[currentSegment].pos.y  -= 0.1f;
         if (glfwGetKey(window.internal, GLFW_KEY_LEFT_BRACKET)) line.segments[currentSegment].size   -= 0.05f;
-        if (glfwGetKey(window.internal, GLFW_KEY_RIGHT_BRACKET)) line.segments[currentSegment].size  += 0.05f;
+        if (glfwGetKey(window.internal, GLFW_KEY_RIGHT_BRACKET)) line.segments[currentSegment].size  += 0.05f;*/
+
+        vec2s mpos = cameraGetWorldCoordsFromMouse(&camera, window.internal);
+        mpos.x /= 4.0f;
+        mpos.y /= 4.0f;
+        mpos = cameraGetWorldCoordsFromScreenSpace(&spriteCamera, mpos.x, mpos.y);
+
+        limbIkSolve(&state, mpos);
+        for (int i = 0; i < (int)line.numSegments; i++) {
+            line.segments[i].pos = limbIkSmooth(&state, i, line.numSegments, 6.0f);
+        }
+
         lineRendererUpdateModel(&line);
 
         // Draw the legs without the outlines

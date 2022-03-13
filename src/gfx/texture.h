@@ -11,6 +11,6 @@ typedef struct Texture {
 
 void textureLoad(Texture * tex, const char * file);
 void textureActivate(Texture * tex, UniformLoc sampler2D, int textureSlot);
-vec2s texturePixelToUV(Texture * tex, int px, int py);
+vec2s texturePixelToUV(Texture * tex, float px, float py);
 
 #endif

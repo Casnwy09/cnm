@@ -18,6 +18,8 @@ sources = [
     'src/gfx/lineRenderer.c',
     'src/gfx/window.c',
     'src/gfx/framebuffer.c',
+
+    'src/gfx/anim/limbIk.c',
 ]
 sources_deps = [
     'deps/src/glad.c'

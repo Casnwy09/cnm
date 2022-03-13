@@ -65,7 +65,8 @@ void lineRendererUpdateModel(LineRenderer * lr) {
             bb.y = lr->segments[i].pos.y + linePerp[1].y * lr->segments[i].size;
             finalPt = lineIntersection(aa, ab, ba, bb);
 
-            if (finalPt.x == FLT_MAX || finalPt.y == FLT_MAX) {
+            if (finalPt.x == FLT_MAX || finalPt.y == FLT_MAX || 
+                lineIntersectionDet(aa, ab, ba, bb) < 1.0f) {
                 finalPt.x = lr->segments[i].pos.x + linePerp[1].x * lr->segments[i].size;
                 finalPt.y = lr->segments[i].pos.y + linePerp[1].y * lr->segments[i].size;
             }
