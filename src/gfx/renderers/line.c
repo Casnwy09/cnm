@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <glad/glad.h>
 #include <cglm/cglm.h>
-#include "../util/math.h"
-#include "lineRenderer.h"
+#include "../../util/math.h"
+#include "line.h"
 
 #define SEGMENTS_INC 8
 

@@ -75,11 +75,13 @@ void texturedShaderInit(TexturedShader * shader, const char * vert, const char *
     shader->mainColor = glGetUniformLocation(shader->shader, "mainColor");
     shader->model = glGetUniformLocation(shader->shader, "model");
 }
-void spriteShaderInit(SpriteShader * shader) {
-    shader->shader = shaderProgramFromFile("assets/shaders/spriteShader/vertex.vert", "assets/shaders/spriteShader/geometry.geom", "assets/shaders/spriteShader/fragment.frag");
+void spriteShaderInit(SpriteShader * shader, const char * frag) {
+    shader->shader = shaderProgramFromFile("assets/shaders/spriteShader/vertex.vert", "assets/shaders/spriteShader/geometry.geom", frag);
     shader->texture0 = glGetUniformLocation(shader->shader, "primaryTex");
+    shader->texture1 = glGetUniformLocation(shader->shader, "maskTex");
     shader->projection = glGetUniformLocation(shader->shader, "projection");
     shader->view = glGetUniformLocation(shader->shader, "view");
+    shader->mainColor = glGetUniformLocation(shader->shader, "mainColor");
 }
 void flatShaderInit(FlatShader * shader) {
     shader->shader = shaderProgramFromFile("assets/shaders/flatShader/vertex.vert", NULL, "assets/shaders/flatShader/fragment.frag");

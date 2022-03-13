@@ -25,8 +25,8 @@ typedef struct ColoredVertex {
 } ColoredVertex;
 typedef struct SpriteVertexEntry {
     alignas(16) mat4s model;
-    vec2s uvPos;
-    vec2s uvSize;
+    vec2s uvTopLeft;
+    vec2s uvBottomRight;
 } SpriteVertexEntry;
 typedef struct Model {
     GLuint vao, vbo, ebo;

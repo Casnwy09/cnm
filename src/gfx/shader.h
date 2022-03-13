@@ -27,7 +27,7 @@ GLuint shaderProgramFromFile(const char * vertFile, const char * geomFile, const
 GLuint shaderFromString(GLenum type, const char * source);
 
 void texturedShaderInit(TexturedShader * shader, const char * vert, const char * geom, const char * frag);
-void spriteShaderInit(SpriteShader * shader);
+void spriteShaderInit(SpriteShader * shader, const char * frag);
 void flatShaderInit(FlatShader * shader);
 void outlineSpriteShaderInit(OutlineSpriteShader * shader);
 

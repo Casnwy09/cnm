@@ -34,5 +34,5 @@ void textureActivate(Texture * tex, UniformLoc sampler2D, int textureSlot) {
     glUniform1i(sampler2D, textureSlot);
 }
 vec2s texturePixelToUV(Texture * tex, float px, float py) {
-    return (vec2s){.x = px / (float)tex->width, .y = 1.0f - py / (float)tex->height};
+    return (vec2s){.x = px / (float)tex->width, .y = 1.0f - (py / (float)tex->height)};
 }

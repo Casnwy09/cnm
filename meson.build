@@ -15,11 +15,13 @@ sources = [
     'src/gfx/model.c',
     'src/gfx/texture.c',
     'src/gfx/camera.c',
-    'src/gfx/lineRenderer.c',
     'src/gfx/window.c',
     'src/gfx/framebuffer.c',
 
     'src/gfx/anim/limbIk.c',
+
+    'src/gfx/renderers/line.c',
+    'src/gfx/renderers/player.c',
 ]
 sources_deps = [
     'deps/src/glad.c'

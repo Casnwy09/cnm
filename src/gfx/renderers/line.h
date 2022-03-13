@@ -1,6 +1,6 @@
 #ifndef _lineRenderer_h_
 #define _lineRenderer_h_
-#include "model.h"
+#include "../model.h"
 
 typedef struct LineRendererSegment {
     float size;

@@ -8,15 +8,11 @@
 #include "gfx/texture.h"
 #include "gfx/camera.h"
 #include "util/util.h"
-#include "gfx/lineRenderer.h"
 #include "util/math.h"
 #include "gfx/window.h"
-#include "gfx/framebuffer.h"
-#include "gfx/anim/limbIk.h"
+#include "gfx/renderers/player.h"
 
 static Camera camera;
-static Camera spriteCamera;
-static alignas(16) mat4 modelMatrix;
 
 void framebufferSizeCallback(GLFWwindow * window, int width, int height) {
     cameraUpdateFromResize(&camera, width, height);
@@ -34,76 +30,16 @@ int main(int argc, char ** argv) {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    //Model m;
-    //spriteModelInit(&m);
-    //SpriteShader shader;
-    //spriteShaderInit(&shader);
-
-    Framebuffer spriteScreen, outlineScreen;
-    framebufferCreate(&spriteScreen, 32, 32, true);
-    framebufferCreate(&outlineScreen, spriteScreen.width + 2, spriteScreen.height + 2, true);
-    cameraUpdateFromResize(&spriteCamera, spriteScreen.width, spriteScreen.height);
-    spriteCamera.x = 0.0f;
-    spriteCamera.y = 0.0f;
-    spriteCamera.ang = 0.0f;
-    spriteCamera.zoom = 1.0f / 20.0f;
-    cameraUpdateMatrix(&spriteCamera);
-
-    TexturedShader shader, shader2;
-    OutlineSpriteShader outlineShader;
-    texturedShaderInit(&shader2, "assets/shaders/texturedShader/vertex.vert", NULL, "assets/shaders/texturedShader/fragment.frag");
-    texturedShaderInit(&shader, "assets/shaders/playerShaders/line.vert", NULL, "assets/shaders/playerShaders/line.frag");
-    outlineSpriteShaderInit(&outlineShader);
-    vec4s shaderColor = (vec4s){.x = 1.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f};
-
-    Texture t[2];
-    textureLoad(t + 0, "assets/textures/player.png");
-    textureLoad(t + 1, "assets/textures/playerMask.png");
-    LineRenderer line;
-    lineRendererCreate(&line, 5);
-    Model quadModel, quadModel2;
-    createQuadModel(&quadModel, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f);
-    createQuadModel(&quadModel2, 2.0f, 2.0f,
-        -1.0f / (float)spriteScreen.width,
-        1.0f + 1.0f / (float)spriteScreen.width,
-        1.0f + 1.0f / (float)spriteScreen.height,
-        -1.0f / (float)spriteScreen.height);
-
-    LimbIKState state;
-    limbIkCreate(
-        &state,
-        (vec2s){ .x = 1.0f, .y = 10.0f },
-        6.0f, 8.0f, 2.0f, -0.5f*PI
-    );
-
-    //SpriteVertexEntry sprites[3] = {
-    //    {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}},
-    //    {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}},
-    //    {.uvPos = {0.0f, 0.0f}, .uvSize = {1.0f, 1.0f}}
-    //};
-    //generateModelMatrix(sprites[0].model, 0.25f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
-    //generateModelMatrix(sprites[1].model, -0.25f, 0.25f, 0.0f, 1.0f, 1.0f, 45.0f / 180.0f * 3.1415962f);
-    //generateModelMatrix(sprites[2].model, 0.0f, -0.25f, 0.0f, 2.0f, 1.0f, 0.0f);
-    //modelBufferVerticies(&m, sizeof(sprites), sprites, GL_STATIC_DRAW);
-    //m.numVerticies = sizeof(sprites) / sizeof(SpriteVertexEntry);
-
+    
     camera.x = 0.0f;
     camera.y = 0.0f;
     camera.zoom = 1.0f/15.0f;
     camera.ang = 0.0f;
     cameraUpdateMatrix(&camera);
 
-    for (int i = 0; i < line.numSegments; i++) {
-        float l = (float)i / ((float)line.numSegments - 1.0f);
-        line.segments[i].pos = (vec2s){ .x = 1.0f, .y = -20.0f*l+10.0f };
-        line.segments[i].uv1 = texturePixelToUV(t+0, 16, (32.f-14.f)*l+14.f);
-        line.segments[i].uv2 = texturePixelToUV(t+0, 18, (32.f-14.f)*l+14.f);
-        line.segments[i].size = 0.8f;
-    }
-
-    //int currentSegment = 0;
-    //bool lastLeft = false, lastRight = false, left = false, right = false;
+    PlayerRenderer pr;
+    playerRendererGlobalsInit();
+    playerRendererCreate(&pr, 0.0f, 0.0f);
 
     while (!glfwWindowShouldClose(window.internal)) {
         if (glfwGetKey(window.internal, GLFW_KEY_ESCAPE))
@@ -114,88 +50,61 @@ int main(int argc, char ** argv) {
         if (glfwGetKey(window.internal, GLFW_KEY_S))
             camera.y -= 0.1f;
 
-        /*if (glfwGetKey(window.internal, GLFW_KEY_U) && shaderColor.x < 1.0f) shaderColor.x += 0.02f;
-        if (glfwGetKey(window.internal, GLFW_KEY_J) && shaderColor.x > 0.0f) shaderColor.x -= 0.02f;
-        if (glfwGetKey(window.internal, GLFW_KEY_I) && shaderColor.y < 1.0f) shaderColor.y += 0.02f;
-        if (glfwGetKey(window.internal, GLFW_KEY_K) && shaderColor.y > 0.0f) shaderColor.y -= 0.02f;
-        if (glfwGetKey(window.internal, GLFW_KEY_O) && shaderColor.z < 1.0f) shaderColor.z += 0.02f;
-        if (glfwGetKey(window.internal, GLFW_KEY_L) && shaderColor.z > 0.0f) shaderColor.z -= 0.02f;
-
-        lastLeft = left; lastRight = right;
-        left = glfwGetKey(window.internal, GLFW_KEY_COMMA);
-        right = glfwGetKey(window.internal, GLFW_KEY_PERIOD);
-        if (left && !lastLeft && currentSegment > 0) currentSegment--;
-        if (right && !lastRight && currentSegment + 1 < line.numSegments) currentSegment++;
-
-        if (glfwGetKey(window.internal, GLFW_KEY_LEFT)) line.segments[currentSegment].pos.x  -= 0.1f;
-        if (glfwGetKey(window.internal, GLFW_KEY_RIGHT)) line.segments[currentSegment].pos.x += 0.1f;
-        if (glfwGetKey(window.internal, GLFW_KEY_UP)) line.segments[currentSegment].pos.y    += 0.1f;
-        if (glfwGetKey(window.internal, GLFW_KEY_DOWN)) line.segments[currentSegment].pos.y  -= 0.1f;
-        if (glfwGetKey(window.internal, GLFW_KEY_LEFT_BRACKET)) line.segments[currentSegment].size   -= 0.05f;
-        if (glfwGetKey(window.internal, GLFW_KEY_RIGHT_BRACKET)) line.segments[currentSegment].size  += 0.05f;*/
-
+        // Update the legs
         vec2s mpos = cameraGetWorldCoordsFromMouse(&camera, window.internal);
         mpos.x /= 4.0f;
         mpos.y /= 4.0f;
-        mpos = cameraGetWorldCoordsFromScreenSpace(&spriteCamera, mpos.x, mpos.y);
+        mpos = cameraGetWorldCoordsFromScreenSpace(playerRendererGetGlobalSpriteCam(), mpos.x, mpos.y);
 
-        limbIkSolve(&state, mpos);
-        for (int i = 0; i < (int)line.numSegments; i++) {
-            line.segments[i].pos = limbIkSmooth(&state, i, line.numSegments, 6.0f);
+        pr.ik.arms[1].ankle = (vec2s){ .x = pr.ik.arms[1].base.x - 4.55f, .y = pr.ik.arms[1].base.y - 7.7f };
+        pr.ik.arms[0].ankle = (vec2s){ .x = pr.ik.arms[0].base.x + 10.0f, .y = pr.ik.arms[0].base.y };
+        pr.ik.legs[0].ankle = (vec2s){ .x = pr.ik.legs[0].base.x + 3.94f, .y = pr.ik.legs[0].base.y - 8.64f };
+        pr.ik.legs[1].ankle = (vec2s){ .x = pr.ik.legs[1].base.x - 4.20f, .y = pr.ik.legs[1].base.y - 9.70f };
+
+        if (glfwGetKey(window.internal, GLFW_KEY_SPACE)) {
+            pr.ik.arms[1].ankle = mpos;
+            pr.ik.arms[0].ankle = mpos;
         }
 
-        lineRendererUpdateModel(&line);
+        if (glfwGetKey(window.internal, GLFW_KEY_ENTER) || glfwGetKey(window.internal, GLFW_KEY_RIGHT_SHIFT)) {
+            float time = glfwGetTime() * 3.2f;
+            if (glfwGetKey(window.internal, GLFW_KEY_RIGHT_SHIFT)) time *= 2.0f;
+            float leg0Height = glm_clamp(sinf(time * PI), 0.0f, 1.0f)*4.0f;
+            float leg1Height = glm_clamp(-sinf(time * PI), 0.0f, 1.0f)*4.0f;
+            float leg0X = fabsf(fmodf(time, 2.0f)-1.0f)*-10.0f+1.5f;
+            float leg1X = fabsf(fmodf(time, 2.0f)-1.0f)*10.0f-3.0f;
+            float yShift = glm_clamp(sinf(time * PI), 0.0f, 1.0f) * 0.15f;
 
-        // Draw the legs without the outlines
-        framebufferBind(&spriteScreen);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+            pr.ik.legs[0].ankle.y += leg0Height - yShift*9.0f;
+            pr.ik.legs[0].ankle.x += leg0X;
+            pr.ik.legs[1].ankle.y += leg1Height - yShift*9.0f;
+            pr.ik.legs[1].ankle.x += leg1X;
 
-        cameraUpdateMatrix(&spriteCamera);
-        glUseProgram(shader.shader);
-        glUniform4f(shader.mainColor, shaderColor.x, shaderColor.y, shaderColor.z, shaderColor.w);
-        textureActivate(t+0, shader.texture0, 0);
-        textureActivate(t+1, shader.texture1, 1);
-        cameraUpdateShaderUniforms(&spriteCamera, shader.projection, shader.view);
-        lineRendererRender(&line);
+            pr.ik.arms[1].ankle.x += sinf(time * PI)*2.0f+3.0f;
+            pr.ik.arms[1].ankle.y -= (cosf(2.0f*(time * PI) - (0.25f*PI/2.0f))+1.0f) / 2.0f;
+            pr.ik.arms[0].ankle.y -= sinf(time * PI)*0.9f;
 
-        // Apply the pixel outline to the legs
-        framebufferBind(&outlineScreen);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(outlineShader.shader);
-        glUniform2f(outlineShader.pixelStep, 1.0f / (float)spriteScreen.width, 1.0f / (float)spriteScreen.height);
-        framebufferActivateColorTexture(&spriteScreen, outlineShader.texture0, 0);
-        modelRender(&quadModel2, GL_TRIANGLES);
+            pr.origin.x = sinf(time * 2.0f * PI) * 0.15f;
+            pr.origin.y = yShift;
+        }
+        else {
+            pr.origin.x = 0.0f;
+            pr.origin.y = 0.0f;
+        }
 
-        // Draw the pixelated outlined legs to the normal world view
-        windowUseDefaultFramebuffer(&window);
+        playerRendererUpdate(&pr);
+
         glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
         cameraUpdateMatrix(&camera);
-        glUseProgram(shader2.shader);
-        glm_scale_make(modelMatrix, (vec3){8.0f, 8.0f, 1.0f});
-        cameraUpdateShaderUniforms(&camera, shader2.projection, shader2.view);
-        glUniformMatrix4fv(shader2.model, 1, GL_FALSE, (void *)modelMatrix);
-        framebufferActivateColorTexture(&outlineScreen, shader2.texture0, 0);
-        //textureActivate(t+0, shader2.texture0, 0);
-        modelRender(&quadModel, GL_TRIANGLES);
+        playerRendererRender(&pr, &window, &camera);
 
         glfwSwapBuffers(window.internal);
         glfwPollEvents();
     }
 
-    //modelFree(&m);
-    framebufferDestroy(&spriteScreen);
-    framebufferDestroy(&outlineScreen);
-    modelFree(&quadModel);
-    lineRendererDestroy(&line);
-    glDeleteProgram(shader.shader);
-    glDeleteProgram(shader2.shader);
-    glDeleteProgram(outlineShader.shader);
-    glDeleteTextures(1, &t[0].texID);
-    glDeleteTextures(1, &t[1].texID);
+    playerRendererDestroy(&pr);
+    playerRendererGlobalsFree();
     windowFree(&window);
 
     glfwTerminate();
