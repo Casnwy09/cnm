@@ -54,31 +54,6 @@ void playerRendererGlobalsInit(void) {
         -1.0f / (float)prg.fbSprite.height);
     modelInit(&prg.models.sprites, VT_SPRITE_ENTRY, false);
     modelInit(&prg.models.eyes, VT_SPRITE_ENTRY, false);
-
-    // Create the sprites
-    SpriteVertexEntry playerSprites[2];
-    playerSprites[0].uvTopLeft = texturePixelToUV(&prg.color, 0.0f, 0.0f);
-    playerSprites[0].uvBottomRight = texturePixelToUV(&prg.color, 12.0f, 12.0f);
-    glm_translate_make(playerSprites[0].model.raw, (vec3){0.0f, 0.0f, 0.0f});
-    glm_scale(playerSprites[0].model.raw, (vec3){12.0f, 12.0f, 1.0f});
-
-    playerSprites[1].uvTopLeft = texturePixelToUV(&prg.color, 16.0f, 0.0f);
-    playerSprites[1].uvBottomRight = texturePixelToUV(&prg.color, 28.0f, 10.0f);
-    glm_translate_make(playerSprites[1].model.raw, (vec3){0.0f, 11.0f, 0.0f});
-    glm_scale(playerSprites[1].model.raw, (vec3){12.0f, 10.0f, 1.0f});
-
-    modelBufferVerticies(&prg.models.sprites, sizeof(playerSprites), playerSprites, GL_STATIC_DRAW);
-    prg.models.sprites.numVerticies = 2;
-
-    // Create the eye sprites
-    SpriteVertexEntry eyes;
-    eyes.uvTopLeft = texturePixelToUV(&prg.color, 0.0f, 16.0f);
-    eyes.uvBottomRight = texturePixelToUV(&prg.color, 3.0f, 18.0f);
-    glm_translate_make(eyes.model.raw, (vec3){2.0f, 11.0f, 0.0f});
-    glm_scale(eyes.model.raw, (vec3){3.0f, 2.0f, 1.0f});
-    modelBufferVerticies(&prg.models.eyes, sizeof(eyes), &eyes, GL_STATIC_DRAW);
-    prg.models.eyes.numVerticies = 1;
-
 }
 void playerRendererGlobalsFree(void) {
     framebufferDestroy(&prg.fbSprite);
@@ -142,6 +117,8 @@ void playerRendererCreate(PlayerRenderer * pr, float ox, float oy) {
 
     pr->origin.x = ox;
     pr->origin.y = oy;
+    pr->io.x = 0.0f;
+    pr->io.y = 0.0f;
     pr->color = (vec4s){{1.0f, 0.0f, 0.0f, 1.0f}};
     pr->eyeColor = (vec4s){{0.48f, 0.48f, 1.0f, 1.0f}};
 
@@ -169,8 +146,12 @@ void playerRendererUpdate(PlayerRenderer * pr) {
     SOLVE(pr->ik.arms[1], pr->lines.arms[1], 2.0f);
 }
 static void drawPlayerLeg(PlayerRenderer * pr, LineRenderer * line) {
+    alignas(16) mat4 trans;
+
     glUseProgram(prg.shaders.line.shader);
     glUniform4f(prg.shaders.line.mainColor, pr->color.x, pr->color.y, pr->color.z, pr->color.w);
+    glm_translate_make(trans, (vec3){pr->io.x, pr->io.y, 0.0f});
+    glUniformMatrix4fv(prg.shaders.line.model, 1, GL_FALSE, (void *)trans);
     textureActivate(&prg.color, prg.shaders.line.texture0, 0);
     textureActivate(&prg.mask, prg.shaders.line.texture1, 1);
     cameraUpdateShaderUniforms(&prg.camera, prg.shaders.line.projection, prg.shaders.line.view);
@@ -178,6 +159,30 @@ static void drawPlayerLeg(PlayerRenderer * pr, LineRenderer * line) {
 }
 void playerRendererRender(PlayerRenderer * pr, Window * window, Camera * camera) {
     alignas(16) mat4 modelMatrix;
+
+    // Create the sprites
+    SpriteVertexEntry playerSprites[2];
+    playerSprites[0].uvTopLeft = texturePixelToUV(&prg.color, 0.0f, 0.0f);
+    playerSprites[0].uvBottomRight = texturePixelToUV(&prg.color, 12.0f, 12.0f);
+    glm_translate_make(playerSprites[0].model.raw, (vec3){pr->io.x, pr->io.y, 0.0f});
+    glm_scale(playerSprites[0].model.raw, (vec3){12.0f, 12.0f, 1.0f});
+
+    playerSprites[1].uvTopLeft = texturePixelToUV(&prg.color, 16.0f, 0.0f);
+    playerSprites[1].uvBottomRight = texturePixelToUV(&prg.color, 28.0f, 10.0f);
+    glm_translate_make(playerSprites[1].model.raw, (vec3){pr->io.x, pr->io.y+11.0f, 0.0f});
+    glm_scale(playerSprites[1].model.raw, (vec3){12.0f, 10.0f, 1.0f});
+
+    modelBufferVerticies(&prg.models.sprites, sizeof(playerSprites), playerSprites, GL_DYNAMIC_DRAW);
+    prg.models.sprites.numVerticies = 2;
+
+    // Create the eye sprites
+    SpriteVertexEntry eyes;
+    eyes.uvTopLeft = texturePixelToUV(&prg.color, 0.0f, 16.0f);
+    eyes.uvBottomRight = texturePixelToUV(&prg.color, 3.0f, 18.0f);
+    glm_translate_make(eyes.model.raw, (vec3){pr->io.x+2.0f, pr->io.y+11.0f, 0.0f});
+    glm_scale(eyes.model.raw, (vec3){3.0f, 2.0f, 1.0f});
+    modelBufferVerticies(&prg.models.eyes, sizeof(eyes), &eyes, GL_DYNAMIC_DRAW);
+    prg.models.eyes.numVerticies = 1;
 
     // Draw the legs without the outlines and the body
     framebufferBind(&prg.fbSprite);

@@ -7,6 +7,8 @@ out vec2 texUV;
 uniform mat4 projection, view, model;
 
 void main() {
-    gl_Position = projection * view * vec4(aPos, 1.0);
+    //float texsize = 64;
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    //gl_Position = round(gl_Position * texsize) / texsize;
     texUV = aTexUV;
 }

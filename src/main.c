@@ -58,13 +58,23 @@ int main(int argc, char ** argv) {
 
         pr.ik.arms[1].ankle = (vec2s){ .x = pr.ik.arms[1].base.x - 4.55f, .y = pr.ik.arms[1].base.y - 7.7f };
         pr.ik.arms[0].ankle = (vec2s){ .x = pr.ik.arms[0].base.x + 10.0f, .y = pr.ik.arms[0].base.y };
+
         pr.ik.legs[0].ankle = (vec2s){ .x = pr.ik.legs[0].base.x + 3.94f, .y = pr.ik.legs[0].base.y - 8.64f };
         pr.ik.legs[1].ankle = (vec2s){ .x = pr.ik.legs[1].base.x - 4.20f, .y = pr.ik.legs[1].base.y - 9.70f };
+
+        float mvspd = 0.01f;
+        if (glfwGetKey(window.internal, GLFW_KEY_RIGHT)) pr.io.x += mvspd;
+        if (glfwGetKey(window.internal, GLFW_KEY_LEFT))  pr.io.x -= mvspd;
+        if (glfwGetKey(window.internal, GLFW_KEY_DOWN))  pr.io.y -= mvspd;
+        if (glfwGetKey(window.internal, GLFW_KEY_UP))    pr.io.y += mvspd;
 
         if (glfwGetKey(window.internal, GLFW_KEY_SPACE)) {
             pr.ik.arms[1].ankle = mpos;
             pr.ik.arms[0].ankle = mpos;
         }
+
+        float arm_angle = atan2f(pr.ik.arms[1].ankle.y - pr.ik.arms[1].base.y, pr.ik.arms[1].ankle.x - pr.ik.arms[1].base.x);
+        pr.ik.arms[1].clockwise = (arm_angle > PI / 2.0f || arm_angle < -4.0f/5.0f * PI) ? true : false;
 
         if (glfwGetKey(window.internal, GLFW_KEY_ENTER) || glfwGetKey(window.internal, GLFW_KEY_RIGHT_SHIFT)) {
             float time = glfwGetTime() * 3.2f;

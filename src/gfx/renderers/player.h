@@ -19,6 +19,7 @@ typedef struct PlayerRenderer {
 
     vec2s origin;
     vec4s color, eyeColor;
+    vec2s io;
 } PlayerRenderer;
 
 void playerRendererGlobalsInit(void);
